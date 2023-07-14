@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Movies - MovieWeb App</title>
+</head>
+<body>
+    <h1>User Movies</h1>
+    <h2>User: {{ user.name }}</h2>
+    <ul>
+        {% for movie_id, movie in user.movies.items() %}
+            <li>
+                <strong>Title:</strong> {{ movie.title }}<br>
+                <strong>Director:</strong> {{ movie.director }}<br>
+                <strong>Year:</strong> {{ movie.year }}<br>
+                <strong>Rating:</strong> {{ movie.rating }}<br>
+                <a href="/users/{{ user.id }}/update_movie/{{ movie_id }}">Edit</a>
+                <a href="/users/{{ user.id }}/delete_movie/{{ movie_id }}" style="color: red;">Delete</a>
+            </li>
+            <br>
+        {% endfor %}
+    </ul>
+</body>
+</html>
