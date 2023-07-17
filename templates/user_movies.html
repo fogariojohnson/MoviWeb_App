@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>User Movies - MovieWeb App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <h1>User Movies</h1>
@@ -14,11 +15,14 @@
                 <strong>Director:</strong> {{ movie.director }}<br>
                 <strong>Year:</strong> {{ movie.year }}<br>
                 <strong>Rating:</strong> {{ movie.rating }}<br>
-                <a href="/users/{{ user.id }}/update_movie/{{ movie_id }}">Edit</a>
-                <a href="/users/{{ user.id }}/delete_movie/{{ movie_id }}" style="color: red;">Delete</a>
+                <a href="/users/{{ user_id }}/update_movie/{{ movie_id }}">Edit</a>
+                <a href="/users/{{ user_id }}/delete_movie/{{ movie_id }}" style="color: red;">Delete</a>
             </li>
             <br>
         {% endfor %}
     </ul>
+ <a href="/users/{{ user_id }}/add_movie" style="color: red;">Add Movie</a>
+    <br>
+    <a href="/users">HOME</a>
 </body>
 </html>

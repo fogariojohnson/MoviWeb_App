@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, url_for
 from flask_cors import CORS
 from datamanager.json_data_manager import JSONDataManager
 
@@ -16,9 +16,11 @@ def home():
 def list_users():
     try:
         users = data_manager.get_all_users()
-        return render_template('users.html', users=users)
+        users_dict = {str(i + 1): user for i, user in enumerate(users)}
+        return render_template('users.html', users=users_dict)
     except Exception as e:
         return "An error occurred: " + str(e)
+
 
 
 @app.route('/users/<user_id>')
@@ -27,7 +29,7 @@ def user_movies(user_id):
         user = data_manager.get_user_movies(user_id)
         if user is None:
             return "User not found"
-        return render_template('user_movies.html', user=user)
+        return render_template('user_movies.html', user=user, user_id=user_id)
     except Exception as e:
         return "An error occurred: " + str(e)
 
@@ -38,7 +40,7 @@ def add_user():
         if request.method == 'POST':
             name = request.form['name']
             user_id = data_manager.add_user(name)
-            return redirect(f'/users/{user_id}')
+            return redirect(url_for('list_users'))  # Redirect to list_users instead of user_movies
         return render_template('add_user.html')
     except Exception as e:
         return "An error occurred: " + str(e)
@@ -50,7 +52,7 @@ def add_movie(user_id):
         if request.method == 'POST':
             title = request.form['title']
             data_manager.add_movie(user_id, title)
-            return redirect(f'/users/{user_id}')
+            return redirect(url_for('user_movies', user_id=user_id))
         return render_template('add_movie.html', user_id=user_id)
     except Exception as e:
         return "An error occurred: " + str(e)
@@ -65,14 +67,14 @@ def update_movie(user_id, movie_id):
             year = request.form['year']
             rating = request.form['rating']
             data_manager.update_movie(user_id, movie_id, title, director, year, rating)
-            return redirect(f'/users/{user_id}')
+            return redirect(url_for('user_movies', user_id=user_id))
         user = data_manager.get_user_movies(user_id)
         if user is None:
             return "User not found"
         movie = user['movies'].get(movie_id)
         if movie is None:
             return "Movie not found"
-        return render_template('update_movie.html', user=user, movie=movie)
+        return render_template('update_movie.html', user=user, movie=movie, user_id=user_id, movie_id=movie_id)
     except Exception as e:
         return "An error occurred: " + str(e)
 
@@ -81,7 +83,16 @@ def update_movie(user_id, movie_id):
 def delete_movie(user_id, movie_id):
     try:
         data_manager.delete_movie(user_id, movie_id)
-        return redirect(f'/users/{user_id}')
+        return redirect(url_for('user_movies', user_id=user_id))
+    except Exception as e:
+        return "An error occurred: " + str(e)
+
+
+@app.route('/users/<user_id>/delete_user')
+def delete_user(user_id):
+    try:
+        data_manager.delete_user(str(user_id))
+        return redirect(url_for('list_users'))  # Redirect to list_users instead of user_movies
     except Exception as e:
         return "An error occurred: " + str(e)
 

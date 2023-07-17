@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css?family=Tangerine');
+
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to right, #efdaf1, #f647ff, #f98fff, #ffadf0) no-repeat center center fixed;
+    background-size: cover;
+    padding: 20px;
+    color: #333;
+}
+
+h1 {
+    font-family: "Tangerine", cursive;
+    font-size: 75px;
+    text-shadow: 1px 1px 1px #ffffff;
+    text-align: center;
+    color: #000000;
+}
+
+ul {
+    list-style: none;
+}
+
+.post {
+    background-color: #FFF;
+    border: 1px solid #DDD;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+}
+
+.post h2 {
+    margin-top: 0;
+}
+
+.post p {
+    margin: 10px 0;
+}
