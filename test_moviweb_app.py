@@ -1,5 +1,4 @@
 import pytest
-from flask import Flask, render_template
 from flask.testing import FlaskClient
 from moviweb_app import app
 

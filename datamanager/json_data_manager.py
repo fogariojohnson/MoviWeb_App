@@ -2,7 +2,7 @@ import json
 import requests
 from .data_manager_interface import DataManagerInterface
 import imdb
-from werkzeug.security import generate_password_hash
+
 
 API_KEY = "e2e17332"
 
