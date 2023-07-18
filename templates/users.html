@@ -20,12 +20,7 @@
         {% endfor %}
     </ul>
 
-    <h2>Add User</h2>
-    <form action="/add_user" method="post">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" required>
-        <br>
-        <input type="submit" value="Add User">
-    </form>
+    <h2>Do you want to add a new user?</h2>
+    <a href="/add_user"><input type="submit" value="Add New User"></a>
 </body>
 </html>

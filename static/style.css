@@ -1,37 +1,124 @@
 @import url('https://fonts.googleapis.com/css?family=Tangerine');
 
 body {
-    font-family: Arial, sans-serif;
-    background: linear-gradient(to right, #efdaf1, #f647ff, #f98fff, #ffadf0) no-repeat center center fixed;
-    background-size: cover;
-    padding: 20px;
-    color: #333;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(to right, #efdaf1, #f647ff, #f98fff, #ffadf0) no-repeat center center fixed;
+  background-size: cover;
+  padding: 20px;
+  color: #333;
 }
 
 h1 {
-    font-family: "Tangerine", cursive;
-    font-size: 75px;
-    text-shadow: 1px 1px 1px #ffffff;
-    text-align: center;
-    color: #000000;
+  font-family: "Tangerine", cursive;
+  font-size: 75px;
+  text-shadow: 1px 1px 1px #ffffff;
+  text-align: center;
+  color: #000000;
 }
 
 ul {
-    list-style: none;
+  list-style: none;
 }
 
-.post {
-    background-color: #FFF;
-    border: 1px solid #DDD;
-    padding: 20px;
-    margin-bottom: 20px;
-    border-radius: 8px;
+.list-movies-title {
+  padding: 10px 0;
+  background: #009B50;
+  color: white;
+  text-align: center;
+  font-size: 16pt;
 }
 
-.post h2 {
-    margin-top: 0;
+.movie-grid {
+  list-style-type: none;
+  padding: 0;
+  margin: 0 20px;
+  display: grid;
+  width: 90%;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  justify-content: center;
+  gap: 20px;
 }
 
-.post p {
-    margin: 10px 0;
+.movie-grid li {
+  padding: 10px 15px;
+  text-align: left;
+}
+
+.movie {
+  width: 100%;
+  position: relative;
+}
+
+.image-container {
+  position: relative;
+}
+
+.genre {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  height: 20px;
+  width: 20px;
+}
+
+.flag {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  height: 20px;
+  width: 20px;
+}
+
+.movie-poster {
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  width: 100%;
+  height: auto;
+  position: relative;
+  z-index: 1;
+}
+
+.movie-title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  color: #fff;
+  padding: 5px 10px;
+  font-weight: bold;
+  z-index: 3;
+}
+
+.movie-year,
+.movie-rating,
+.movie-director {
+  font-size: 0.8em;
+  text-align: left;
+  margin-top: 10px;
+}
+
+/* Media Queries */
+
+/* Small screens */
+@media screen and (max-width: 480px) {
+  .movie-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+  }
+
+  .movie-title {
+    font-size: 12px;
+  }
+}
+
+/* Medium screens */
+@media screen and (min-width: 481px) and (max-width: 768px) {
+  .movie-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+  }
+
+  .movie-title {
+    font-size: 14px;
+  }
 }
