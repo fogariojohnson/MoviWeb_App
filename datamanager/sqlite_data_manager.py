@@ -1,19 +1,11 @@
 from flask_sqlalchemy import SQLAlchemy
-# from flask import Flask
 from MoviWeb_App.datamanager.data_manager_interface import DataManagerInterface
 from MoviWeb_App.datamanager.sql_model import db, Movie, User
 
 
-# app = Flask(__name__)
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Users/myste/PycharmProjects/ProjectPart5/MoviWeb_App/storage/movies.sqlite'
-# db = SQLAlchemy()
-
-
 class SQLiteDataManager(DataManagerInterface):
     def __init__(self, db_file_name):
-        self.db_file_name = db_file_name
-        # self.db = SQLAlchemy()
-        # self.app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///C:/Users/myste/PycharmProjects/ProjectPart5/MoviWeb_App/storage/movies.sqlite'
+        self.db = db_file_name
 
     def get_all_users(self):
         return User.query.all()
@@ -21,8 +13,7 @@ class SQLiteDataManager(DataManagerInterface):
     def get_user_movies(self, user_id):
         user = User.query.get(user_id)
         if user:
-            return user.movies
-        return []
+            return user.user_movies  # Change this to access user movies
 
     def add_user(self, name, username, password):
         new_user = User(name=name, username=username, password=password)

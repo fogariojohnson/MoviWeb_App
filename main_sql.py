@@ -8,36 +8,30 @@
 
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user
-from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import secrets
 from datamanager.sqlite_data_manager import SQLiteDataManager
 from datamanager.sql_model import db, User, Movie
 
 
-
 app = Flask(__name__)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Users/myste/PycharmProjects/ProjectPart5/MoviWeb_App/storage/movies.sqlite'
-db = SQLAlchemy(app)
-
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Users/Admin/PycharmProjects/ProjectPhase5/MoviWeb_App/storage/movies.sqlite'
+db.init_app(app)
 CORS(app)
-data_manager = SQLiteDataManager('storage/movies.sqlite')
-
-
-# Generate a secure secret key
-secret_key = secrets.token_hex(16)
-app.secret_key = secret_key
+data_manager = SQLiteDataManager("storage/movies.sqlite")
 
 # Configure LoginManager
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'  # Specify the login view endpoint
 
+# Generate a secure secret key
+secret_key = secrets.token_hex(16)
+app.secret_key = secret_key
+
 
 @app.route('/')
 def home():
-    """The Welcome message of the app."""
-    return "Welcome to MovieWeb App!"
+    return render_template('login.html', welcome_message="Welcome to MovieWeb App!")
 
 
 @app.route('/users')
@@ -57,7 +51,8 @@ def list_users():
         users_dict = {str(i + 1): user for i, user in enumerate(users)}
         return render_template('users.html', users=users_dict)
     except Exception as e:
-        return "An error occurred: " + str(e)
+        error_message = str(e)
+        return render_template('error.html', error_message=error_message)
 
 
 @app.route('/users/<user_id>')
@@ -76,10 +71,11 @@ def user_movies(user_id):
     try:
         user = data_manager.get_user_movies(user_id)
         if user is None:
-            return "User not found"
+            return render_template('error.html', error_message='User not found')
         return render_template('user_movies.html', user=user, user_id=user_id)
     except Exception as e:
-        return "An error occurred: " + str(e)
+        error_message = str(e)
+        return render_template('error.html', error_message=error_message)
 
 
 @app.route('/add_user', methods=['GET', 'POST'])
@@ -101,7 +97,8 @@ def add_user():
             return redirect(url_for('list_users'))
         return render_template('add_user.html')
     except Exception as e:
-        return "An error occurred: " + str(e)
+        error_message = str(e)
+        return render_template('error.html', error_message=error_message)
 
 
 @app.route('/users/<user_id>/add_movie', methods=['GET', 'POST'])
@@ -124,7 +121,8 @@ def add_movie(user_id):
             return redirect(url_for('user_movies', user_id=user_id))
         return render_template('add_movie.html', user_id=user_id)
     except Exception as e:
-        return "An error occurred: " + str(e)
+        error_message = str(e)
+        return render_template('error.html', error_message=error_message)
 
 
 @app.route('/users/<user_id>/update_movie/<movie_id>', methods=['GET', 'POST'])
@@ -151,13 +149,14 @@ def update_movie(user_id, movie_id):
             return redirect(url_for('user_movies', user_id=user_id))
         user = data_manager.get_user_movies(user_id)
         if user is None:
-            return "User not found"
+            return render_template('error.html', error_message='User not found')
         movie = user['movies'].get(movie_id)
         if movie is None:
-            return "Movie not found"
+            return render_template('error.html', error_message='Movie not found')
         return render_template('update_movie.html', user=user, movie=movie, user_id=user_id, movie_id=movie_id)
     except Exception as e:
-        return "An error occurred: " + str(e)
+        error_message = str(e)
+        return render_template('error.html', error_message=error_message)
 
 
 @app.route('/users/<user_id>/delete_movie/<movie_id>')
@@ -177,7 +176,8 @@ def delete_movie(user_id, movie_id):
         data_manager.delete_movie(user_id, movie_id)
         return redirect(url_for('user_movies', user_id=user_id))
     except Exception as e:
-        return "An error occurred: " + str(e)
+        error_message = str(e)
+        return render_template('error.html', error_message=error_message)
 
 
 @app.route('/users/<user_id>/delete_user')
@@ -196,7 +196,8 @@ def delete_user(user_id):
         data_manager.delete_user(str(user_id))
         return redirect(url_for('list_users'))
     except Exception as e:
-        return "An error occurred: " + str(e)
+        error_message = str(e)
+        return render_template('error.html', error_message=error_message)
 
 
 @app.errorhandler(404)
@@ -305,6 +306,5 @@ def logout():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-
     app.run(host='0.0.0.0', port=5000, debug=True)
 

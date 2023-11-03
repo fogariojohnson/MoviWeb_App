@@ -2,6 +2,7 @@ import json
 import requests
 from .data_manager_interface import DataManagerInterface
 import imdb
+import uuid
 
 
 API_KEY = "e2e17332"
@@ -113,10 +114,12 @@ class JSONDataManager(DataManagerInterface):
                 data = json.load(file_obj)
                 existing_users = data.values()
                 for user in existing_users:
-                    if user['name'] == name:
+                    if user['username'] == username or user['name'] == name:
                         return None
 
-                user_id = str(len(data) + 1)  # Generate a unique user ID
+                # Generate a unique ID for the new user
+                user_id = str(uuid.uuid4())
+
                 user = {
                     "name": name,
                     "username": username,

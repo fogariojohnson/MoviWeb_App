@@ -30,9 +30,8 @@ class Movie(db.Model):
     url = db.Column(db.String)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
-
-def __repr__(self):
-    return f"Movie(id={self.id}, title='{self.title}, director='{self.director}',  year={self.year}, rating={self.rating} )"
+    def __repr__(self):
+        return f"Movie(id={self.id}, title='{self.title}, director='{self.director}',  year={self.year}, rating={self.rating} )"
 
 
 # movies = db.session.query(Movie).all()
