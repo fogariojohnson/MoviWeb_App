@@ -1,9 +1,10 @@
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
+Base = db.Model
 
 
-class User(db.Model):
+class User(Base):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -13,10 +14,10 @@ class User(db.Model):
     user_movies = db.relationship('Movie', backref='user', lazy=True)
 
     def __repr__(self):
-        return f"User(id={self.id}, username='{self.username}', password='{self.password}',  movies='{self.movies}')"
+        return f"User(id={self.id}, name={self.name}, username='{self.username}', password='{self.password}', movies='{self.user_movies}') "
 
 
-class Movie(db.Model):
+class Movie(Base):
     __tablename__ = 'movies'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -31,9 +32,4 @@ class Movie(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     def __repr__(self):
-        return f"Movie(id={self.id}, title='{self.title}, director='{self.director}',  year={self.year}, rating={self.rating} )"
-
-
-# movies = db.session.query(Movie).all()
-# for movie in movies:
-#     print(movie.title)
+        return f"Movie(id={self.id}, title='{self.title}, director='{self.director}',  year={self.year}, rating={self.rating}, poster={self.poster}, genre={self.genre}, flag={self.flag}, url={self.url}, user_id={self.user_id})"

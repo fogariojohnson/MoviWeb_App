@@ -22,7 +22,7 @@ ul {
 
 .list-movies-title {
   padding: 10px 0;
-  background: #009B50;
+  background: blueviolet;
   color: white;
   text-align: center;
   font-size: 16pt;
@@ -82,11 +82,13 @@ ul {
 .movie-title {
   position: absolute;
   bottom: 0;
-  left: 0;
   color: #fff;
   padding: 5px 10px;
   font-weight: bold;
-  z-index: 3;
+  top: 25%;
+  left: 20%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
 }
 
 .movie-year,

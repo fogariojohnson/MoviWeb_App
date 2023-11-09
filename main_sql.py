@@ -1,7 +1,7 @@
 """
 ===========================================================
                   Movie Web Application
-                  Flask Web Application
+        Flask Web Application with Database Storage
               By Frelin C. Ogario Johnson
 ===========================================================
 """
@@ -11,14 +11,15 @@ from flask_login import LoginManager, UserMixin, login_required, login_user, log
 from flask_cors import CORS
 import secrets
 from datamanager.sqlite_data_manager import SQLiteDataManager
-from datamanager.sql_model import db, User, Movie
+from datamanager.sql_model import db
 
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Users/Admin/PycharmProjects/ProjectPhase5/MoviWeb_App/storage/movies.sqlite'
 db.init_app(app)
 CORS(app)
-data_manager = SQLiteDataManager("storage/movies.sqlite")
+data_manager = SQLiteDataManager('C:/Users/Admin/PycharmProjects/ProjectPhase5/MoviWeb_App/storage/movies.sqlite')
+
 
 # Configure LoginManager
 login_manager = LoginManager(app)
@@ -55,45 +56,14 @@ def list_users():
         return render_template('error.html', error_message=error_message)
 
 
-@app.route('/users/<user_id>')
-def user_movies(user_id):
-    """
-    Route handler for displaying movies for a specific user.
-
-    Args:
-        user_id: ID of the user for whom the movies are being displayed.
-
-    Returns:
-        Rendered template for displaying the user's movies.
-        If the user is not found, returns a string indicating the user was not found.
-        In case of an error, returns an error message string.
-    """
-    try:
-        user = data_manager.get_user_movies(user_id)
-        if user is None:
-            return render_template('error.html', error_message='User not found')
-        return render_template('user_movies.html', user=user, user_id=user_id)
-    except Exception as e:
-        error_message = str(e)
-        return render_template('error.html', error_message=error_message)
-
-
 @app.route('/add_user', methods=['GET', 'POST'])
 def add_user():
-    """
-    Route handler for adding a new user.
-
-    Returns:
-        If the request method is POST, redirects to the 'list_users' route.
-        If the request method is GET, renders the 'add_user.html' template.
-        In case of an error, returns an error message string.
-    """
     try:
         if request.method == 'POST':
             name = request.form['name']
             username = request.form['username']
             password = request.form['password']
-            user_id = data_manager.add_user(name, username, password)
+            data_manager.add_user(name, username, password)
             return redirect(url_for('list_users'))
         return render_template('add_user.html')
     except Exception as e:
@@ -125,6 +95,30 @@ def add_movie(user_id):
         return render_template('error.html', error_message=error_message)
 
 
+@app.route('/users/<user_id>')
+def user_movies(user_id):
+    """
+    Route handler for displaying movies for a specific user.
+
+    Args:
+        user_id: ID of the user for whom the movies are being displayed.
+
+    Returns:
+        Rendered template for displaying the user's movies.
+        If the user is not found, returns a string indicating the user was not found.
+        In case of an error, returns an error message string.
+    """
+    try:
+        user = data_manager.get_user_movies(user_id)
+        if user_movies is None:
+            return render_template('error.html', error_message='User not found')
+
+        return render_template('sql_user_movies.html', user=user, user_id=user_id)
+    except Exception as e:
+        error_message = str(e)
+        return render_template('error.html', error_message=error_message)
+
+
 @app.route('/users/<user_id>/update_movie/<movie_id>', methods=['GET', 'POST'])
 def update_movie(user_id, movie_id):
     """
@@ -143,17 +137,25 @@ def update_movie(user_id, movie_id):
         if request.method == 'POST':
             title = request.form['title']
             director = request.form['director']
-            year = request.form['year']
-            rating = request.form['rating']
-            data_manager.update_movie(user_id, movie_id, title, director, year, rating)
-            return redirect(url_for('user_movies', user_id=user_id))
-        user = data_manager.get_user_movies(user_id)
-        if user is None:
+            year = int(request.form['year'])
+            rating = float(request.form['rating'])
+            success = data_manager.update_movie(user_id, movie_id, title, director, year, rating)
+
+            if success:
+                return redirect(url_for('user_movies', user_id=user_id))
+            else:
+                return render_template('error.html', error_message='Movie update failed')
+
+        user_movies = data_manager.get_user_movies(user_id)
+        if user_movies is None:
             return render_template('error.html', error_message='User not found')
-        movie = user['movies'].get(movie_id)
+
+        movie = user_movies.get(int(movie_id))
         if movie is None:
             return render_template('error.html', error_message='Movie not found')
-        return render_template('update_movie.html', user=user, movie=movie, user_id=user_id, movie_id=movie_id)
+
+        return render_template('update_movie.html', user_movies=user_movies, movie=movie, user_id=user_id, movie_id=movie_id)
+
     except Exception as e:
         error_message = str(e)
         return render_template('error.html', error_message=error_message)
@@ -212,15 +214,29 @@ def method_not_allowed_error(error):
     return render_template('405.html'), 405
 
 
-class User(UserMixin):
-    """ Define a User model that implements the UserMixin from Flask-Login. """
-    def __init__(self, user_id):
-        """Initialize a User object.
+class UserLog(UserMixin):
+    """ Define a UserLog model that implements the UserMixin from Flask-Login. """
+    def __init__(self, user_id, username, password):
+        """Initialize a UserLog object.
 
         Args:
             user_id (str): The ID of the user.
         """
         self.id = user_id
+        self.username = username
+        self.password = password
+
+    @property
+    def is_authenticated(self):
+        return True  # You can customize this based on your authentication logic
+
+    @property
+    def is_active(self):
+        return True  # You can customize this based on your user activation logic
+
+    @property
+    def is_anonymous(self):
+        return False
 
     def get_id(self):
         """
@@ -240,7 +256,8 @@ class User(UserMixin):
             user_id (str): The unique identifier of the user.
 
         Returns:
-            User or None: The user object if found, or None if the user does not exist."""
+            UserLog or None: The user object if found, or None if the user does not exist.
+        """
         return data_manager.get_user(user_id)
 
 
@@ -253,8 +270,9 @@ def load_user(user_id):
         user_id (str): The unique identifier of the user.
 
     Returns:
-        User or None: The user object if found, or None if the user does not exist."""
-    return User.get(user_id)
+        UserLog or None: The user object if found, or None if the user does not exist.
+    """
+    return UserLog.get(user_id)
 
 
 # Route for handling user login
@@ -276,15 +294,15 @@ def login():
 
         if user:
             # Use Flask-Login's login_user function to log in the user
-            login_user(User(user['user_id']))
+            user_log = UserLog(user_id=user.id, username=user.username, password=user.password)
+            login_user(user_log)
 
             # Redirect to the user_movies page
-            return redirect(url_for('user_movies', user_id=user['user_id']))
+            return redirect(url_for('user_movies', user_id=user.id))
 
         # Authentication failed, show an error message
         flash('Invalid username or password', 'error')
 
-    # Render the login template
     return render_template('login.html')
 
 
@@ -300,11 +318,10 @@ def logout():
     """
     # Use Flask-Login's logout_user function to log out the current user
     logout_user()
-    return redirect(url_for('home'))
+    return redirect(url_for('login'))
 
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(host='0.0.0.0', port=5000, debug=True)
-

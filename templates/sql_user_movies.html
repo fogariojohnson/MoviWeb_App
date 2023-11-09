@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Movies - MovieWeb App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="list-movies-title">
+        <h1>User Movies</h1>
+    </div>
+    <h2>User: {{ user['name'] }}</h2>
+    <ul class="movie-grid">
+        {% for movie_id, movie in user.items() %}
+            <li>
+                <div class="movie">
+                    <div class="movie-title"><strong>Title:</strong> {{ movie['title'] }}</div>
+                    <a href="{{ movie['url'] }}">
+                        <div class="image-container">
+                            <img class="movie-poster" src="{{ movie['poster'] }}" alt="{{ movie['title'] }}">
+                            <img class="genre" src="{{ movie['genre'] }}" alt="genre">
+                            <img class="flag" src="{{ movie['flag'] }}" alt="flag origin">
+                        </div>
+                    </a>
+                    <div class="movie-director"><strong>Director:</strong> {{ movie['director'] }}</div>
+                    <div class="movie-year"><strong>Year:</strong> {{ movie['year'] }}</div>
+                    <div class="movie-rating"><strong>Rating:</strong> {{ movie['rating'] }}</div>
+                    <!-- Include additional movie details here -->
+                    <a href="/users/{{ user_id }}/update_movie/{{ movie_id }}">Edit</a>
+                    <a href="/users/{{ user_id }}/delete_movie/{{ movie_id }}" style="color: red;">Delete</a>
+                </div>
+            </li>
+            <br>
+        {% endfor %}
+    </ul>
+    <a href="/users/{{ user_id }}/add_movie" style="color: red;">Add Movie</a>
+    <br>
+    <a href="/logout">Log Out</a>
+</body>
+</html>
