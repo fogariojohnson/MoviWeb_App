@@ -9,7 +9,6 @@
 <div class="list-movies-title">
     <h1>User Movies</h1>
 </div>
-    <h2>User: {{ user.name }}</h2>
     <ul class="movie-grid">
         {% for movie_id, movie in user.movies.items() %}
             <li>

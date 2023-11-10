@@ -7,19 +7,30 @@ import requests
 
 
 class SQLiteDataManager(DataManagerInterface):
+    """SQLiteDataManager class represents a storage for the database file"""
     def __init__(self, db_file_name):
+        """
+        Initializes a new instance of the databse file.
+
+        Arg:
+            filename(file path): The location of the database file.
+        """
+
         # Create an SQLAlchemy engine
         self.engine = create_engine(f'sqlite:///{db_file_name}')
-
         # Create a session factory using the engine
-        session = sessionmaker(bind=self.engine)
-
+        Session = sessionmaker(bind=self.engine)
         # Initialize a session
-        self.session = session()
-
+        self.session = Session()
         self.country_dict = {}
 
     def get_all_users(self):
+        """
+        Gets all the users from the database file.
+
+        Return:
+            users(list): List of all the users from the database file
+        """
         try:
             users = self.session.query(User).all()
             return users
@@ -27,11 +38,18 @@ class SQLiteDataManager(DataManagerInterface):
             print(f"Error in get_all_users: {str(e)}")
             return []
 
-    @staticmethod
-    def add_user(name, username, password):
+    def add_user(self, name, username, password):
+        """
+        Allows user to add another user.
+
+        Arg:
+            name(str): The name of the user which will be used in the database file
+            username(str): The username of the user which will be used ito access the movies in the database file.
+            password(str): The password of the user which will be used to access the movies in the database file.
+        """
         new_user = User(name=name, username=username, password=password)
-        db.session.add(new_user)
-        db.session.commit()
+        self.session.add(new_user)
+        self.session.commit()
 
     def genre_maker(self, genre):
         """ Creates a genre image of the movie
@@ -69,6 +87,17 @@ class SQLiteDataManager(DataManagerInterface):
         return self.country_dict
 
     def movie_data(self, title):
+        """
+        Fetches information about a movie using its title from the IMDb database.
+
+        Args:
+            title (str): The title of the movie to retrieve information for.
+
+        Returns:
+            new_movie(dict): A dictionary containing various details about the movie.
+                        The dictionary includes the movie title, director(s), release year, rating,
+                        poster URL, genre(s) with corresponding emoticons, the country's flag, and IMDb URL.
+        """
         # Create an IMDb object
         ia = imdb.IMDb()
 
@@ -140,6 +169,17 @@ class SQLiteDataManager(DataManagerInterface):
         return new_movie
 
     def add_movie(self, user_id, title):
+        """
+        Adds a movie to the movies' database.
+        Loads the information from the database file, add the movie, and saves it.
+
+        Args:
+            user_id(str): The unique id of the user.
+            title(str): Title of the movie to be added.
+
+        Raises:
+            Exception: Covers all the possible errors that might occur and explains user the reason.
+        """
         try:
             existing_movie = self.session.query(Movie).filter_by(title=title).first()
 
@@ -176,6 +216,15 @@ class SQLiteDataManager(DataManagerInterface):
             return None
 
     def get_user_movies(self, user_id):
+        """
+         Gets all the movies of the user from the database file.
+
+        Arg:
+            user_id(str): The unique key or user id of the user.
+
+        Return:
+            movie_dict(dict): A dictionary of the movies of the indicated user.
+        """
         try:
             user_movies = self.session.query(Movie).filter_by(user_id=user_id).all()
             movie_dict = {movie.id: movie for movie in user_movies}
@@ -185,6 +234,22 @@ class SQLiteDataManager(DataManagerInterface):
             return {}
 
     def update_movie(self, user_id, movie_id, title, director, year, rating):
+        """
+        Updates a movie from the movies' database.
+        Loads the information from the database file, updates the movie,
+        and saves it. The function doesn't need to validate the input.
+
+        Args:
+            user_id(str): The unique id of the user.
+            movie_id(str): The movie id of the user's movie.
+            title(str): Movie title to update.
+            director(str): Director to update.
+            year(int): Year to update.
+            rating(float): Rating to update.
+
+        Return:
+            movie or None: The updated Movie object if successful, else None.
+        """
         try:
             movie = self.session.query(Movie).filter_by(id=movie_id, user_id=user_id).first()
             if movie:
@@ -202,6 +267,15 @@ class SQLiteDataManager(DataManagerInterface):
             return []
 
     def delete_movie(self, user_id, movie_id):
+        """
+        Deletes a movie from the movies' database.
+        Loads the information from the database file, deletes the movie, and saves it.
+
+        Args:
+            user_id(str): The unique id of the user.
+            movie_id(str): The movie id of the user's movie.
+
+        """
         try:
             movie = self.session.query(Movie).filter_by(id=movie_id, user_id=user_id).first()
             if movie:
@@ -217,6 +291,14 @@ class SQLiteDataManager(DataManagerInterface):
             return False
 
     def delete_user(self, user_id):
+        """
+        Deletes the user from the database.
+        Loads the information from the dataabase file, deletes the movie,
+        and saves it.
+
+        Args:
+            user_id(str): The unique id of the user.
+        """
         try:
             user = self.session.query(User).filter_by(id=user_id).first()
             if user:
@@ -230,3 +312,69 @@ class SQLiteDataManager(DataManagerInterface):
             print(f"Error deleting user: {str(e)}")
             self.session.rollback()
             return False
+
+    def get_user(self, user_id):
+        """
+        Gets all the  information of the user from the database.
+
+        Arg:
+            user_id(str): The unique key or user id of the user.
+
+        Return:
+            user(object): The object of the information of the user.
+        """
+        try:
+
+            user = self.session.query(User).filter_by(id=user_id).first()
+
+            if user:
+                return user
+            else:
+                return None
+        except Exception as e:
+            print(f"Error retrieving user: {str(e)}")
+            return None
+
+    def get_user_by_id(self, user_id):
+        """
+        Retrieve a user from the database by their ID.
+
+        Arguments:
+            user_id (int): The unique identifier of the user to be retrieved.
+
+        Returns:
+            user(object): The user object with the specified ID exists.
+        """
+        session = self.session()
+        user = session.query(User).filter(User.id == user_id).first()
+        session.close()
+        return user
+
+    def get_user_by_username(self, username):
+        """
+        Gets all the  information of the user using its username from the database.
+
+        Argument:
+            username(str): The username of the user as indicated in the JSON file.
+
+        Return:
+            user(object): An object of the information of the user.
+        """
+        session = self.session()
+        user = session.query(User).filter(User.username == username).first()
+        session.close()
+        return user
+
+    def authenticate_user(self, username, password):
+        """
+        Authenticate the user by its username and password information as stored in the database file.
+
+        Arguments:
+            username(str): The username of the user as indicated in the JSON file.
+            password((str): The password of the user as indicated in the JSON file.
+
+        Return:
+            user(object): An object of the information of the user.
+        """
+        user = self.session.query(User).filter(User.username == username, User.password == password).first()
+        return user
