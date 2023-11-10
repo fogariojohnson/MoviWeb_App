@@ -93,6 +93,9 @@ def add_user():
             user_id = data_manager.add_user(name, username, password)
             return redirect(url_for('list_users'))
         return render_template('add_user.html')
+    except ValueError as e:
+        error_message = str(e)
+        return render_template('error.html', error_message=error_message)
     except Exception as e:
         error_message = str(e)
         return render_template('error.html', error_message=error_message)
@@ -117,6 +120,9 @@ def add_movie(user_id):
             data_manager.add_movie(user_id, title)
             return redirect(url_for('user_movies', user_id=user_id))
         return render_template('add_movie.html', user_id=user_id)
+    except TypeError as type_error:
+        error_message = f"Type error occurred: {str(type_error)}"
+        return render_template('error.html', error_message=error_message)
     except Exception as e:
         error_message = str(e)
         return render_template('error.html', error_message=error_message)

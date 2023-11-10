@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">    <title>Movie Reviews</title>
+</head>
+<body>
+
+<h1>Movie Reviews</h1>
+
+<!-- Display movie reviews -->
+{% if reviews %}
+    <ul>
+        {% for review in reviews %}
+            <li>
+                <p>{{ review.review_text }}</p>
+                <p>Rating: {{ review.rating }}</p>
+                <a href="/users/{{ user_id }}/edit_review/{{ movie_id }}">Edit Review</a>
+                <a href="/users/{{ user_id }}/delete_review/{{ movie_id }}">Delete Review</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No reviews available for this movie.</p>
+{% endif %}
+<br>
+<!-- Link to add a new review -->
+<a href="/users/{{ user_id }}/add_review/{{ movie_id }}">Add a Review</a>
+<a href="/users/{{ user_id }}">My Movies</a>
+</body>
+</html>

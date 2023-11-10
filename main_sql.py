@@ -11,7 +11,8 @@ from flask_login import LoginManager, UserMixin, login_required, login_user, log
 from flask_cors import CORS
 import secrets
 from datamanager.sqlite_data_manager import SQLiteDataManager
-from datamanager.sql_model import db
+from datamanager.sql_model import db, Review
+from sqlalchemy.exc import IntegrityError
 
 
 app = Flask(__name__)
@@ -75,6 +76,11 @@ def add_user():
             data_manager.add_user(name, username, password)
             return redirect(url_for('list_users'))
         return render_template('add_user.html')
+
+    except IntegrityError as integrity_error:
+        error_message = f"Error adding user: {str(integrity_error)}. The name or username already exists."
+        return render_template('error.html', error_message=error_message)
+
     except Exception as e:
         error_message = str(e)
         return render_template('error.html', error_message=error_message)
@@ -99,6 +105,11 @@ def add_movie(user_id):
             data_manager.add_movie(user_id, title)
             return redirect(url_for('user_movies', user_id=user_id))
         return render_template('add_movie.html', user_id=user_id)
+
+    except TypeError as type_error:
+        error_message = f"Type error occurred: {str(type_error)}"
+        return render_template('error.html', error_message=error_message)
+
     except Exception as e:
         error_message = str(e)
         return render_template('error.html', error_message=error_message)
@@ -165,7 +176,13 @@ def update_movie(user_id, movie_id):
 
         return render_template('update_movie.html', user_movies=user_movies, movie=movie, user_id=user_id, movie_id=movie_id)
 
+    except IntegrityError as integrity_error:
+        # Handle the specific IntegrityError related to the database constraint
+        error_message = f"Error updating movie: {str(integrity_error)}. Allowed rating is from 1-10."
+        return render_template('error.html', error_message=error_message)
+
     except Exception as e:
+        # Handle other general exceptions
         error_message = str(e)
         return render_template('error.html', error_message=error_message)
 
@@ -210,6 +227,106 @@ def delete_user(user_id):
         error_message = str(e)
         return render_template('error.html', error_message=error_message)
 
+
+@app.route('/users/<user_id>/reviews/<movie_id>')
+def movie_review(user_id, movie_id):
+    """
+    Route handler for movie review.
+
+    Args:
+        user_id (int): The ID of the user.
+        movie_id (int): The ID of the movie.
+
+    Returns:
+        Redirects to the 'movie review' route.
+        In case of an error, returns an error message template.
+    """
+    try:
+        reviews = data_manager.get_movie_reviews(user_id, movie_id)
+        return render_template('movie_review.html', reviews=reviews, user_id=user_id, movie_id=movie_id)
+    except Exception as e:
+        error_message = str(e)
+        return render_template('error.html', error_message=error_message)
+
+
+@app.route('/users/<user_id>/edit_review/<movie_id>', methods=['GET', 'POST'])
+def edit_review(user_id, movie_id):
+    """
+    Route handler for movie review that needs to be edited.
+
+    Args:
+        user_id (int): The ID of the user.
+        movie_id (int): The ID of the movie.
+
+    Returns:
+        Redirects to the 'user movies' route.
+        In case of an error, returns an error message template.
+    """
+    try:
+        existing_review = data_manager.session.query(Review).filter_by(user_id=user_id, movie_id=movie_id).first()
+
+        if request.method == 'POST':
+            updated_review_text = request.form.get('review_text')
+            updated_rating = float(request.form.get('rating'))
+            success = data_manager.edit_review(user_id, movie_id, updated_review_text, updated_rating)
+
+            if success:
+                return redirect(url_for('user_movies', user_id=user_id))
+            else:
+                error_message = 'Failed to update review'
+                return render_template('error.html', error_message=error_message)
+
+        # Pass the existing_review variable to the template
+        return render_template('edit_review.html', user_id=user_id, movie_id=movie_id, existing_review=existing_review)
+    except Exception as e:
+        error_message = str(e)
+        return render_template('error.html', error_message=error_message)
+
+
+@app.route('/users/<user_id>/add_review/<movie_id>', methods=['GET', 'POST'])
+def add_review(user_id, movie_id):
+    """
+    Route handler for to add a review for a movie.
+
+    Args:
+        user_id (int): The ID of the user.
+        movie_id (int): The ID of the movie.
+
+    Returns:
+        Redirects to the 'movie review' route.
+        In case of an error, returns an error message template.
+    """
+    try:
+        if request.method == 'POST':
+            review_text = request.form['review_text']
+            rating = request.form['rating']
+            data_manager.add_review(user_id, movie_id, review_text, rating)
+            return redirect(url_for('movie_review', user_id=user_id, movie_id=movie_id))
+        return render_template('add_review.html', user_id=user_id, movie_id=movie_id)
+    except Exception as e:
+        error_message = str(e)
+        return render_template('error.html', error_message=error_message)
+
+
+@app.route('/users/<user_id>/delete_review/<movie_id>', methods=['GET', 'POST'])
+def delete_review(user_id, movie_id):
+    """
+    Route handler to delete a review for a movie.
+
+    Args:
+        user_id (int): The ID of the user.
+        movie_id (int): The ID of the movie.
+
+    Returns:
+        Redirects to the 'movie review' route.
+        In case of an error, returns an error message template.
+    """
+    try:
+        data_manager.delete_review(user_id, movie_id)
+        return redirect(url_for('movie_review', user_id=user_id, movie_id=movie_id))
+    except Exception as e:
+        error_message = str(e)
+        return render_template('error.html', error_message=error_message)
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -310,7 +427,6 @@ def logout():
     Returns:
         Redirect to the home page.
     """
-    # Use Flask-Login's logout_user function to log out the current user
     logout_user()
     return redirect(url_for('home'))
 

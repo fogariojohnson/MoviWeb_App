@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Edit Review</title>
+</head>
+<body>
+
+<h1>Edit Review</h1>
+
+<form method="post" action="{{ url_for('edit_review', user_id=user_id, movie_id=movie_id) }}">
+    <label for="review_text">Review Text:</label>
+    <textarea id="review_text" name="review_text" required>{{ existing_review.review_text }}</textarea><br>
+
+    <label for="rating">Rating:</label>
+    <input type="number" id="rating" name="rating" min="1" max="10" step="0.1" value="{{ existing_review.rating }}" required><br>
+
+    <button type="submit">Update Review</button>
+</form>
+<br>
+<!-- Link to go back to movie reviews -->
+<a href="{{ url_for('movie_review', user_id=user_id, movie_id=movie_id) }}">Back to Movie Reviews</a>
+
+</body>
+</html>

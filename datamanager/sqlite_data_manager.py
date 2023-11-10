@@ -1,4 +1,4 @@
-from .sql_model import db, User, Movie
+from .sql_model import db, User, Movie, Review
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from .data_manager_interface import DataManagerInterface
@@ -378,3 +378,95 @@ class SQLiteDataManager(DataManagerInterface):
         """
         user = self.session.query(User).filter(User.username == username, User.password == password).first()
         return user
+
+    def get_movie_reviews(self, user_id, movie_id):
+        """
+        Gets all reviews for a specific movie by a user.
+
+        Args:
+            user_id (str): The unique id of the user.
+            movie_id (str): The movie id.
+
+        Returns:
+            list: List of reviews for the specified movie by the user.
+        """
+        try:
+            reviews = self.session.query(Review).filter_by(user_id=user_id, movie_id=movie_id).all()
+            return reviews
+        except Exception as e:
+            print(f"Error in get_movie_reviews: {str(e)}")
+            return []
+
+    def edit_review(self, user_id, movie_id, review_text, rating):
+        """
+        Edits an existing review for a movie by a user.
+
+        Args:
+            user_id (str): The unique id of the user.
+            movie_id (str): The movie id.
+            review_text (str): The updated review text.
+            rating (float): The updated rating.
+
+        Returns:
+            bool: True if the review is successfully edited, False otherwise.
+        """
+        try:
+            review = self.session.query(Review).filter_by(user_id=user_id, movie_id=movie_id).first()
+            if review:
+                review.review_text = review_text
+                review.rating = rating
+                self.session.commit()
+                return True
+            else:
+                return False
+        except Exception as e:
+            print(f"Error in edit_review: {str(e)}")
+            self.session.rollback()
+            return False
+
+    def add_review(self, user_id, movie_id, review_text, rating):
+        """
+        Adds a new review for a movie by a user.
+
+        Args:
+            user_id (str): The unique id of the user.
+            movie_id (str): The movie id.
+            review_text (str): The review text.
+            rating (float): The rating.
+
+        Returns:
+            bool: True if the review is successfully added, False otherwise.
+        """
+        try:
+            new_review = Review(user_id=user_id, movie_id=movie_id, review_text=review_text, rating=rating)
+            self.session.add(new_review)
+            self.session.commit()
+            return True
+        except Exception as e:
+            print(f"Error in add_review: {str(e)}")
+            self.session.rollback()
+            return False
+
+    def delete_review(self, user_id, movie_id):
+        """
+        Deletes a review for a movie by a user.
+
+        Args:
+            user_id (str): The unique id of the user.
+            movie_id (str): The movie id.
+
+        Returns:
+            bool: True if the review is successfully deleted, False otherwise.
+        """
+        try:
+            review = self.session.query(Review).filter_by(user_id=user_id, movie_id=movie_id).first()
+            if review:
+                self.session.delete(review)
+                self.session.commit()
+                return True
+            else:
+                return False
+        except Exception as e:
+            print(f"Error in delete_review: {str(e)}")
+            self.session.rollback()
+            return False
