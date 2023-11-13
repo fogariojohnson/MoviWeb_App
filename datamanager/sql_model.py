@@ -55,8 +55,8 @@ class Review(Base):
         CheckConstraint('rating >= 0 AND rating <= 10', name='check_valid_rating'),
     )
 
-    user = db.relationship('User', back_populates='reviews')
-    movie = db.relationship('Movie', back_populates='user_reviews')
+    user = db.relationship('User', back_populates='reviews', overlaps='reviewed_user')
+    movie = db.relationship('Movie', back_populates='user_reviews', overlaps='reviewed_movie')
 
     def __repr__(self):
         return f"Review(review_id={self.review_id}, user_id={self.user_id}, movie_id={self.movie_id}, rating={self.rating})"

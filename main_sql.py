@@ -13,6 +13,7 @@ import secrets
 from datamanager.sqlite_data_manager import SQLiteDataManager
 from datamanager.sql_model import db, Review
 from sqlalchemy.exc import IntegrityError
+from api import api_bp
 
 
 app = Flask(__name__)
@@ -328,6 +329,7 @@ def delete_review(user_id, movie_id):
         error_message = str(e)
         return render_template('error.html', error_message=error_message)
 
+
 @app.errorhandler(404)
 def page_not_found(e):
     """It handles the error if the page is not found."""
@@ -338,6 +340,9 @@ def page_not_found(e):
 def method_not_allowed_error(error):
     """It handles the error if the method is not allowed."""
     return render_template('405.html'), 405
+
+
+app.register_blueprint(api_bp, url_prefix='/api')
 
 
 class User(UserMixin):
