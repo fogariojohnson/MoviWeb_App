@@ -11,7 +11,7 @@ from flask_login import LoginManager, UserMixin, login_required, login_user, log
 from flask_cors import CORS
 import secrets
 from datamanager.sqlite_data_manager import SQLiteDataManager
-from datamanager.sql_model import db, Review
+from datamanager.sql_model import db, Review, User
 from sqlalchemy.exc import IntegrityError
 from api import api_bp
 
@@ -130,11 +130,12 @@ def user_movies(user_id):
         In case of an error, returns an error message template.
     """
     try:
+        name = data_manager.get_user(user_id)
         user = data_manager.get_user_movies(user_id)
         if user_movies is None:
             return render_template('error.html', error_message='User not found')
 
-        return render_template('sql_user_movies.html', user=user, user_id=user_id)
+        return render_template('sql_user_movies.html', user=user, user_id=user_id, name=name)
     except Exception as e:
         error_message = str(e)
         return render_template('error.html', error_message=error_message)
@@ -342,6 +343,7 @@ def method_not_allowed_error(error):
     return render_template('405.html'), 405
 
 
+# API added
 app.register_blueprint(api_bp, url_prefix='/api')
 
 
